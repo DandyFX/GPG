@@ -15,13 +15,6 @@ indent_size = 4
 [*.cs]
 indent_size = 4
 
-dotnet_naming_rule.private_can_be_lower_case.symbols = private_method_symbols
-dotnet_naming_symbols.private_method_symbols.applicable_kinds = method,delegate
-dotnet_naming_symbols.private_method_symbols.applicable_accessibilities = private
-dotnet_naming_rule.private_can_be_lower_case.style = first_word_lower_case_style
-dotnet_naming_style.private_can_be_lower_case.capitalization = first_word_lower
-dotnet_naming_rule.private_can_be_lower_case.severity = none
-
 dotnet_sort_system_directives_first = true
 
 dotnet_style_qualification_for_field = false:suggestion
@@ -32,7 +25,7 @@ dotnet_style_qualification_for_event = false:suggestion
 dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
 dotnet_style_predefined_type_for_member_access = true:suggestion
 
-dotnet_style_require_accessibility_modifiers = false:suggestion
+dotnet_style_require_accessibility_modifiers = never:suggestion
 dotnet_style_readonly_field = true:warning
 csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
 dotnet_style_object_initializer = true:suggestion
