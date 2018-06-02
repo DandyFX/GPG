@@ -6,8 +6,6 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-using static Dandy.GPG.Assuan.Global;
-
 namespace Dandy.GPG.Assuan
 {
     /// <summary>
@@ -28,13 +26,11 @@ namespace Dandy.GPG.Assuan
         /// <summary>
         /// Invalid file descriptor
         /// </summary>
-        public static Fd Invalid => new Fd {
-            fd = new IntPtr(-1)
-        };
+        public static Fd Invalid => new Fd { fd = new IntPtr(-1) };
 
         public int UnixFd => windows ? throw new NotSupportedException() : fd.ToInt32();
 
-        [DllImport("msvcrt.dll", SetLastError=true)]
+        [DllImport("msvcrt.dll", SetLastError = true)]
         static extern IntPtr _get_osfhandle(int fd);
 
         /// <summary>

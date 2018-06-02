@@ -47,7 +47,8 @@ namespace Dandy.GPG.Assuan
             }
         }
 
-        ~Context() {
+        ~Context()
+        {
             Dispose(false);
         }
 
@@ -97,12 +98,13 @@ namespace Dandy.GPG.Assuan
 
         [DllImport(AssuanLibrary, CallingConvention = CallingConvention.Cdecl)]
         static extern Error assuan_register_command(IntPtr ctx, IntPtr cmd_string, Handler handler, IntPtr help_string);
-        
+
         public void RegisterCommand(string cmd, Action<string> handler, string help = null)
         {
             var cmdPtr = Marshal.StringToHGlobalAnsi(cmd ?? throw new ArgumentNullException(nameof(cmd)));
-            
-            var handlerPtr = handler == null ? null : new Handler((c, l) => {
+
+            var handlerPtr = handler == null ? null : new Handler((c, l) =>
+            {
                 try {
                     handler(Marshal.PtrToStringAnsi(l));
                     return new Error(ErrorSource.Unknown, ErrorCode.NoError);
@@ -116,7 +118,7 @@ namespace Dandy.GPG.Assuan
             });
             // keep unmanaged callback from being GC'ed
             commands.Add(handlerPtr);
-            
+
             var helpPtr = Marshal.StringToHGlobalAnsi(help);
 
             var err = assuan_register_command(Handle, cmdPtr, handlerPtr, helpPtr);
@@ -125,7 +127,7 @@ namespace Dandy.GPG.Assuan
 
         [DllImport(AssuanLibrary, CallingConvention = CallingConvention.Cdecl)]
         static extern Error assuan_accept(IntPtr ctx);
-        
+
         public void Accept()
         {
             var err = assuan_accept(Handle);
@@ -135,13 +137,13 @@ namespace Dandy.GPG.Assuan
             if (err.IsMinusOne) {
                 err = new Error(ErrorSource.Assuan, ErrorCode.EOF);
             }
-            
+
             err.Assert();
         }
 
         [DllImport(AssuanLibrary, CallingConvention = CallingConvention.Cdecl)]
         static extern Error assuan_process(IntPtr ctx);
-        
+
         public void Process()
         {
             var err = assuan_process(Handle);

@@ -11,7 +11,7 @@ namespace Assuan.Tests.Core
         {
             Runtime.Init();
         }
-        
+
         [Fact]
         public void TestRuntimeVersion()
         {

@@ -36,7 +36,7 @@ namespace Dandy.GPG.Example.Server
             ctx.RegisterCommand("INPUT", null);
             ctx.RegisterCommand("OUTPUT", null);
 
-            for(;;) {
+            for (; ; ) {
                 try {
                     ctx.Accept();
                 }
@@ -63,7 +63,7 @@ namespace Dandy.GPG.Example.Server
                     throw new NotSupportedException("Must run as 32-bit process");
                 }
                 var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-                foreach (var dir in new [] { @"Gpg4win\bin", @"GnuPG\bin" }) {
+                foreach (var dir in new[] { @"Gpg4win\bin", @"GnuPG\bin" }) {
                     var path = Path.Combine(programFiles, dir);
                     AddDllDirectory(path);
                 }

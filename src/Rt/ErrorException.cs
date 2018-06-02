@@ -23,7 +23,7 @@ namespace Dandy.GPG.Rt
         /// <summary>
         /// Creates a new GPG runtime error exception
         /// </summary>
-        public ErrorException(ErrorSource source, ErrorCode code) : this (new Error(source, code))
+        public ErrorException(ErrorSource source, ErrorCode code) : this(new Error(source, code))
         {
         }
     }
