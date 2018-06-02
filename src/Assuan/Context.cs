@@ -25,24 +25,35 @@ namespace Dandy.GPG.Assuan
             }
         }
 
-        [DllImport(AssuanLibrary, CallingConvention = CallingConvention.Cdecl)]
-        static extern Error assuan_new(ref IntPtr ctx);
+        [DllImport(AssuanLibraryWin, EntryPoint = "assuan_new", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error win_assuan_new(ref IntPtr ctx);
+
+        [DllImport(AssuanLibraryUnix, EntryPoint = "assuan_new", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error unix_assuan_new(ref IntPtr ctx);
 
         public Context()
         {
-            var err = assuan_new(ref handle);
+            var err = windows ? win_assuan_new(ref handle) : unix_assuan_new(ref handle);
             err.Assert();
         }
 
-        [DllImport(AssuanLibrary, CallingConvention = CallingConvention.Cdecl)]
-        static extern void assuan_release(IntPtr ctx);
+        [DllImport(AssuanLibraryWin, EntryPoint = "assuan_release", CallingConvention = CallingConvention.Cdecl)]
+        static extern void win_assuan_release(IntPtr ctx);
+
+        [DllImport(AssuanLibraryUnix, EntryPoint = "assuan_release", CallingConvention = CallingConvention.Cdecl)]
+        static extern void unix_assuan_release(IntPtr ctx);
 
         #region IDisposable Support
 
         void Dispose(bool disposing)
         {
             if (handle != IntPtr.Zero) {
-                assuan_release(handle);
+                if (windows) {
+                    win_assuan_release(handle);
+                 }
+                 else {
+                     unix_assuan_release(handle);
+                 }
                 handle = IntPtr.Zero;
             }
         }
@@ -60,10 +71,10 @@ namespace Dandy.GPG.Assuan
 
         #endregion
 
-        [DllImport(AssuanLibrary, EntryPoint = "assuan_init_socket_server", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(AssuanLibraryWin, EntryPoint = "assuan_init_socket_server", CallingConvention = CallingConvention.Cdecl)]
         static extern Error win_assuan_init_socket_server(IntPtr ctx, Fd fd, SocketServerFlags flags);
 
-        [DllImport(AssuanLibrary, EntryPoint = "assuan_init_socket_server", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(AssuanLibraryUnix, EntryPoint = "assuan_init_socket_server", CallingConvention = CallingConvention.Cdecl)]
         static extern Error unix_assuan_init_socket_server(IntPtr ctx, int fd, SocketServerFlags flags);
 
         public void InitSocketServer(Fd fd, SocketServerFlags flags)
@@ -73,10 +84,10 @@ namespace Dandy.GPG.Assuan
             err.Assert();
         }
 
-        [DllImport(AssuanLibrary, EntryPoint = "assuan_init_pipe_server", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(AssuanLibraryWin, EntryPoint = "assuan_init_pipe_server", CallingConvention = CallingConvention.Cdecl)]
         static extern Error win_assuan_init_pipe_server(IntPtr ctx, Fd[] filedes);
 
-        [DllImport(AssuanLibrary, EntryPoint = "assuan_init_pipe_server", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(AssuanLibraryUnix, EntryPoint = "assuan_init_pipe_server", CallingConvention = CallingConvention.Cdecl)]
         static extern Error unix_assuan_init_pipe_server(IntPtr ctx, int[] filedes);
 
         public void InitPipeServer(Fd input, Fd output)
@@ -96,8 +107,11 @@ namespace Dandy.GPG.Assuan
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         delegate Error Handler(IntPtr ctx, IntPtr line);
 
-        [DllImport(AssuanLibrary, CallingConvention = CallingConvention.Cdecl)]
-        static extern Error assuan_register_command(IntPtr ctx, IntPtr cmd_string, Handler handler, IntPtr help_string);
+        [DllImport(AssuanLibraryWin, EntryPoint = "assuan_register_command", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error win_assuan_register_command(IntPtr ctx, IntPtr cmd_string, Handler handler, IntPtr help_string);
+
+        [DllImport(AssuanLibraryUnix, EntryPoint = "assuan_register_command", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error unix_assuan_register_command(IntPtr ctx, IntPtr cmd_string, Handler handler, IntPtr help_string);
 
         public void RegisterCommand(string cmd, Action<string> handler, string help = null)
         {
@@ -121,16 +135,21 @@ namespace Dandy.GPG.Assuan
 
             var helpPtr = Marshal.StringToHGlobalAnsi(help);
 
-            var err = assuan_register_command(Handle, cmdPtr, handlerPtr, helpPtr);
+            var err = windows ?
+                win_assuan_register_command(Handle, cmdPtr, handlerPtr, helpPtr) :
+                unix_assuan_register_command(Handle, cmdPtr, handlerPtr, helpPtr);
             err.Assert();
         }
 
-        [DllImport(AssuanLibrary, CallingConvention = CallingConvention.Cdecl)]
-        static extern Error assuan_accept(IntPtr ctx);
+        [DllImport(AssuanLibraryWin, EntryPoint = "assuan_accept", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error win_assuan_accept(IntPtr ctx);
+
+        [DllImport(AssuanLibraryUnix, EntryPoint = "assuan_accept", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error unix_assuan_accept(IntPtr ctx);
 
         public void Accept()
         {
-            var err = assuan_accept(Handle);
+            var err = windows ? win_assuan_accept(Handle) : unix_assuan_accept(Handle);
 
             // work around for assuan_accept() returning -1 to indicate EOF
             // instead of proper error code.
@@ -141,12 +160,15 @@ namespace Dandy.GPG.Assuan
             err.Assert();
         }
 
-        [DllImport(AssuanLibrary, CallingConvention = CallingConvention.Cdecl)]
-        static extern Error assuan_process(IntPtr ctx);
+        [DllImport(AssuanLibraryWin, EntryPoint = "assuan_process", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error win_assuan_process(IntPtr ctx);
+
+        [DllImport(AssuanLibraryUnix, EntryPoint = "assuan_process", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error unix_assuan_process(IntPtr ctx);
 
         public void Process()
         {
-            var err = assuan_process(Handle);
+            var err = windows ? win_assuan_process(Handle) : unix_assuan_process(Handle);
             err.Assert();
         }
     }

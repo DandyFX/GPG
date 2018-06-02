@@ -10,6 +10,8 @@ namespace Dandy.GPG.Rt
 {
     public struct Error
     {
+        static readonly bool windows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
         const int codeMask = 65536 - 1;
         const int sourceMask = 128 - 1;
         const int sourceShift = 24;
@@ -18,24 +20,30 @@ namespace Dandy.GPG.Rt
 
         public ErrorCode Code => (ErrorCode)(error & codeMask);
 
-        [DllImport(RuntimeLibrary, CallingConvention = CallingConvention.Cdecl)]
-        static extern IntPtr gpg_strerror(uint err);
+        [DllImport(RuntimeLibraryWin, EntryPoint = "gpg_strerror", CallingConvention = CallingConvention.Cdecl)]
+        static extern IntPtr win_gpg_strerror(uint err);
+
+        [DllImport(RuntimeLibraryUnix, EntryPoint = "gpg_strerror", CallingConvention = CallingConvention.Cdecl)]
+        static extern IntPtr unix_gpg_strerror(uint err);
 
         public string CodeDescription {
             get {
-                var ptr = gpg_strerror(error);
+                var ptr = windows ? win_gpg_strerror(error) : unix_gpg_strerror(error);
                 return Marshal.PtrToStringAnsi(ptr);
             }
         }
 
         public ErrorSource Source => (ErrorSource)((error >> sourceShift) & sourceMask);
 
-        [DllImport(RuntimeLibrary, CallingConvention = CallingConvention.Cdecl)]
-        static extern IntPtr gpg_strsource(uint err);
+        [DllImport(RuntimeLibraryWin, EntryPoint = "gpg_strsource", CallingConvention = CallingConvention.Cdecl)]
+        static extern IntPtr win_gpg_strsource(uint err);
+
+        [DllImport(RuntimeLibraryUnix, EntryPoint = "gpg_strsource", CallingConvention = CallingConvention.Cdecl)]
+        static extern IntPtr unix_gpg_strsource(uint err);
 
         public string SourceDescription {
             get {
-                var ptr = gpg_strsource(error);
+                var ptr = windows ? win_gpg_strsource(error) : unix_gpg_strsource(error);
                 return Marshal.PtrToStringAnsi(ptr);
             }
         }
@@ -74,10 +82,26 @@ namespace Dandy.GPG.Rt
             }
         }
 
-        [DllImport(RuntimeLibrary, EntryPoint = "gpg_err_code_from_errno", CallingConvention = CallingConvention.Cdecl)]
-        public static extern ErrorCode CodeFromErrno(int err);
+        [DllImport(RuntimeLibraryWin, EntryPoint = "gpg_err_code_from_errno", CallingConvention = CallingConvention.Cdecl)]
+        static extern ErrorCode win_gpg_err_code_from_errno(int err);
 
-        [DllImport(RuntimeLibrary, EntryPoint = "gpg_err_code_to_errno", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int CodeToErrno(ErrorCode code);
+        [DllImport(RuntimeLibraryUnix, EntryPoint = "gpg_err_code_from_errno", CallingConvention = CallingConvention.Cdecl)]
+        static extern ErrorCode unix_gpg_err_code_from_errno(int err);
+
+        public static ErrorCode CodeFromErrno(int err)
+        {
+            return windows ? win_gpg_err_code_from_errno(err) : unix_gpg_err_code_from_errno(err);
+        }
+
+        [DllImport(RuntimeLibraryWin, EntryPoint = "gpg_err_code_to_errno", CallingConvention = CallingConvention.Cdecl)]
+        static extern int win_gpg_err_code_to_errno(ErrorCode code);
+
+        [DllImport(RuntimeLibraryUnix, EntryPoint = "gpg_err_code_to_errno", CallingConvention = CallingConvention.Cdecl)]
+        static extern int unix_gpg_err_code_to_errno(ErrorCode code);
+
+        public static int CodeToErrno(ErrorCode code)
+        {
+            return windows ? win_gpg_err_code_to_errno(code) : unix_gpg_err_code_to_errno(code);
+        }
     }
 }

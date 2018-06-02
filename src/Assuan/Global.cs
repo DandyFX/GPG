@@ -5,6 +5,14 @@ namespace Dandy.GPG.Assuan
 {
     static class Global
     {
-        internal const string AssuanLibrary = "libassuan-0";
+        /// <summary>
+        /// Name of the Libassuan dll on Windows
+        /// </summary>
+        internal const string AssuanLibraryWin = "libassuan-0";
+
+        /// <summary>
+        /// Name of the Libassuan shared lib on *nix
+        /// </summary>
+        internal const string AssuanLibraryUnix = "assuan";
     }
 }
