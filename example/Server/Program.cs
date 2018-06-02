@@ -8,6 +8,8 @@ using System.Runtime.InteropServices;
 using Dandy.GPG.Assuan;
 using Dandy.GPG.Rt;
 
+using Socket = Dandy.GPG.Assuan.Socket;
+
 namespace Dandy.GPG.Example.Server
 {
     class Program
@@ -22,14 +24,14 @@ namespace Dandy.GPG.Example.Server
             Console.WriteLine("BAR: {0}", line);
         }
 
-        static void commandHandler(Fd fd)
+        static void commandHandler(Socket socket)
         {
             var ctx = new Context();
-            if (fd == Fd.Invalid) {
+            if (socket == null) {
                 ctx.InitPipeServer(Fd.FromPosixFd(0), Fd.FromPosixFd(1));
             }
             else {
-                ctx.InitSocketServer(fd, SocketServerFlags.Accepted);
+                ctx.InitSocketServer(socket, SocketServerFlags.Accepted);
             }
             ctx.RegisterCommand("FOO", foo);
             ctx.RegisterCommand("BAR", bar);
@@ -78,15 +80,15 @@ namespace Dandy.GPG.Example.Server
                     if (File.Exists(args[0])) {
                         File.Delete(args[0]);
                     }
-                    var endpoint = new UnixDomainSocketEndPoint(args[0]);
-                    socket.Bind(endpoint);
+                    var address = Socket.CreateSocketAddress(args[0], out var redirected);
+                    socket.Bind(address);
                     socket.Listen(0);
-                    commandHandler(Fd.FromSocket(socket.Accept()));
+                    commandHandler(socket.Accept());
                 }
             }
             else {
                 // when no command line args, use stdin/stdout pipes
-                commandHandler(Fd.Invalid);
+                commandHandler(null);
             }
         }
     }

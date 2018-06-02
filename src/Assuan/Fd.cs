@@ -47,14 +47,6 @@ namespace Dandy.GPG.Assuan
             return new Fd { fd = (IntPtr)fd };
         }
 
-        public static Fd FromSocket(Socket socket)
-        {
-            // Socket.Handle property is not available in netstandard1.6
-            // TODO: Fix this when we upgrade to netstandard2.x
-            var handle = (IntPtr)socket.GetType().GetRuntimeProperty("Handle").GetValue(socket);
-            return new Fd { fd = handle };
-        }
-
         /// <inheritdoc />
         public override bool Equals(object obj)
         {

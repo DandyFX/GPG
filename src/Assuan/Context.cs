@@ -77,11 +77,16 @@ namespace Dandy.GPG.Assuan
         [DllImport(AssuanLibraryUnix, EntryPoint = "assuan_init_socket_server", CallingConvention = CallingConvention.Cdecl)]
         static extern Error unix_assuan_init_socket_server(IntPtr ctx, int fd, SocketServerFlags flags);
 
-        public void InitSocketServer(Fd fd, SocketServerFlags flags)
+        void InitSocketServer(Fd fd, SocketServerFlags flags)
         {
             var err = windows ? win_assuan_init_socket_server(Handle, fd, flags)
                 : unix_assuan_init_socket_server(Handle, fd.UnixFd, flags);
             err.Assert();
+        }
+
+        public void InitSocketServer(Socket socket, SocketServerFlags flags)
+        {
+            InitSocketServer(socket?.Fd ?? throw new ArgumentNullException(nameof(socket)), flags);
         }
 
         [DllImport(AssuanLibraryWin, EntryPoint = "assuan_init_pipe_server", CallingConvention = CallingConvention.Cdecl)]
