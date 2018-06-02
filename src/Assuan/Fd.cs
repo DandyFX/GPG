@@ -13,24 +13,26 @@ namespace Dandy.GPG.Assuan
     /// <summary>
     /// File descriptor
     /// </summary>
+    /// <remarks>
+    /// In unmanaged code, the size of this struct depends on Windows/Unix, so
+    /// don't pass this directly to unmanaged code without checking the OS
+    /// first. This struct can be used directly with unmanged code on Windows,
+    /// but <see cref="UnixFd"/> should be used instead on other OSes.
+    /// </remarks>
     public partial struct Fd : IEquatable<Fd>
     {
-#if WIN
+        static readonly bool windows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
         IntPtr fd;
-#else
-        int fd;
-#endif
 
         /// <summary>
         /// Invalid file descriptor
         /// </summary>
         public static Fd Invalid => new Fd {
-#if WIN
             fd = new IntPtr(-1)
-#else
-            fd = -1
-#endif
         };
+
+        public int UnixFd => windows ? throw new NotSupportedException() : fd.ToInt32();
 
         [DllImport("msvcrt.dll", SetLastError=true)]
         static extern IntPtr _get_osfhandle(int fd);
@@ -40,14 +42,13 @@ namespace Dandy.GPG.Assuan
         /// </summary>
         public static Fd FromPosixFd(int fd)
         {
-#if WIN
-            if (fd < 0) {
-                return Invalid;
+            if (windows) {
+                if (fd < 0) {
+                    return Invalid;
+                }
+                return new Fd { fd = _get_osfhandle(fd) };
             }
-            return new Fd { fd = _get_osfhandle(fd) };
-#else
-            return new Fd { fd = fd };
-#endif
+            return new Fd { fd = (IntPtr)fd };
         }
 
         public static Fd FromSocket(Socket socket)
@@ -55,11 +56,7 @@ namespace Dandy.GPG.Assuan
             // Socket.Handle property is not available in netstandard1.6
             // TODO: Fix this when we upgrade to netstandard2.x
             var handle = (IntPtr)socket.GetType().GetRuntimeProperty("Handle").GetValue(socket);
-#if WIN
             return new Fd { fd = handle };
-#else
-            return new Fd { fd = handle.ToInt32() };
-#endif
         }
 
         /// <inheritdoc />

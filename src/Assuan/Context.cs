@@ -13,6 +13,8 @@ namespace Dandy.GPG.Assuan
 {
     public sealed class Context : IDisposable
     {
+        static readonly bool windows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
         List<Handler> commands = new List<Handler>();
         IntPtr handle;
 
@@ -58,29 +60,38 @@ namespace Dandy.GPG.Assuan
         }
 
         #endregion
-        
-        [DllImport(AssuanLibrary, CallingConvention = CallingConvention.Cdecl)]
-        static extern Error assuan_init_socket_server(IntPtr ctx, Fd fd, SocketServerFlags flags);
-        
+
+        [DllImport(AssuanLibrary, EntryPoint = "assuan_init_socket_server", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error win_assuan_init_socket_server(IntPtr ctx, Fd fd, SocketServerFlags flags);
+
+        [DllImport(AssuanLibrary, EntryPoint = "assuan_init_socket_server", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error unix_assuan_init_socket_server(IntPtr ctx, int fd, SocketServerFlags flags);
+
         public void InitSocketServer(Fd fd, SocketServerFlags flags)
         {
-            var err = assuan_init_socket_server(Handle, fd, flags);
+            var err = windows ? win_assuan_init_socket_server(Handle, fd, flags)
+                : unix_assuan_init_socket_server(Handle, fd.UnixFd, flags);
             err.Assert();
         }
 
-        [DllImport(AssuanLibrary, CallingConvention = CallingConvention.Cdecl)]
-        static extern Error assuan_init_pipe_server(IntPtr ctx, Fd[] filedes);
-        
-        [DllImport(AssuanLibrary, CallingConvention = CallingConvention.Cdecl)]
-        static extern void assuan_set_sock_nonce(IntPtr ctx, out SocketNonce nonce);
-        
-        public SocketNonce InitPipeServer(Fd input, Fd output)
+        [DllImport(AssuanLibrary, EntryPoint = "assuan_init_pipe_server", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error win_assuan_init_pipe_server(IntPtr ctx, Fd[] filedes);
+
+        [DllImport(AssuanLibrary, EntryPoint = "assuan_init_pipe_server", CallingConvention = CallingConvention.Cdecl)]
+        static extern Error unix_assuan_init_pipe_server(IntPtr ctx, int[] filedes);
+
+        public void InitPipeServer(Fd input, Fd output)
         {
-            var filedes = new Fd[] { input, output };
-            var err = assuan_init_pipe_server(Handle, filedes);
-            err.Assert();
-            assuan_set_sock_nonce(Handle, out var nonce);
-            return nonce;
+            if (windows) {
+                var filedes = new Fd[] { input, output };
+                var err = win_assuan_init_pipe_server(Handle, filedes);
+                err.Assert();
+            }
+            else {
+                var filedes = new int[] { input.UnixFd, output.UnixFd };
+                var err = unix_assuan_init_pipe_server(Handle, filedes);
+                err.Assert();
+            }
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
