@@ -21,8 +21,10 @@ namespace Dandy.GPG.Assuan
     /// </remarks>
     public struct SocketNonce
     {
-        IntPtr length;
+#pragma warning disable CS0169
+        readonly IntPtr length;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-        byte[] nonce;
+        readonly byte[] nonce;
+#pragma warning restore CS0169
     }
 }

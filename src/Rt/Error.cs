@@ -14,7 +14,7 @@ namespace Dandy.GPG.Rt
         const int sourceMask = 128 - 1;
         const int sourceShift = 24;
 
-        uint error;
+        readonly uint error;
 
         public ErrorCode Code => (ErrorCode)(error & codeMask);
 

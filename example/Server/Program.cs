@@ -1,9 +1,8 @@
-﻿// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 // Copyright: 2018 David Lechner <david@lechnology.com>
 
 using System;
 using System.IO;
-using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Dandy.GPG.Assuan;

@@ -63,7 +63,7 @@ namespace Dandy.GPG.Assuan
         public override bool Equals(object obj)
         {
             if (obj is Fd other) {
-                return this.Equals(other);
+                return Equals(other);
             }
             return false;
         }

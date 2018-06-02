@@ -1,13 +1,11 @@
-﻿// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 // Copyright: 2018 David Lechner <david@lechnology.com>
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using Dandy.GPG.Rt;
 using static Dandy.GPG.Assuan.Global;
-using static System.Reflection.BindingFlags;
 
 namespace Dandy.GPG.Assuan
 {
@@ -15,7 +13,7 @@ namespace Dandy.GPG.Assuan
     {
         static readonly bool windows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        List<Handler> commands = new List<Handler>();
+        readonly List<Handler> commands = new List<Handler>();
         IntPtr handle;
 
         IntPtr Handle {
