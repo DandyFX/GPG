@@ -18,7 +18,7 @@ namespace Dandy.GPG.Rt
 
         public ErrorCode Code => (ErrorCode)(error & codeMask);
 
-        [DllImport(GPGRuntimeLibrary, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(RuntimeLibrary, CallingConvention = CallingConvention.Cdecl)]
         static extern IntPtr gpg_strerror(uint err);
 
         public string CodeDescription {
@@ -30,7 +30,7 @@ namespace Dandy.GPG.Rt
 
         public ErrorSource Source => (ErrorSource)((error >> sourceShift) & sourceMask);
 
-        [DllImport(GPGRuntimeLibrary, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(RuntimeLibrary, CallingConvention = CallingConvention.Cdecl)]
         static extern IntPtr gpg_strsource(uint err);
 
         public string SourceDescription {
@@ -74,10 +74,10 @@ namespace Dandy.GPG.Rt
             }
         }
 
-        [DllImport(GPGRuntimeLibrary, EntryPoint = "gpg_err_code_from_errno", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(RuntimeLibrary, EntryPoint = "gpg_err_code_from_errno", CallingConvention = CallingConvention.Cdecl)]
         public static extern ErrorCode CodeFromErrno(int err);
 
-        [DllImport(GPGRuntimeLibrary, EntryPoint = "gpg_err_code_to_errno", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(RuntimeLibrary, EntryPoint = "gpg_err_code_to_errno", CallingConvention = CallingConvention.Cdecl)]
         public static extern int CodeToErrno(ErrorCode code);
     }
 }

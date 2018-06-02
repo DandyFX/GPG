@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using Dandy.GPG.Assuan;
 using Dandy.GPG.Rt;
 
@@ -53,8 +54,22 @@ namespace Dandy.GPG.Example.Server
             }
         }
 
+        [DllImport("kernel32", CharSet = CharSet.Unicode)]
+        static extern int AddDllDirectory(string NewDirectory);
+
         static void Main(string[] args)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                if (RuntimeInformation.ProcessArchitecture != Architecture.X86) {
+                    throw new NotSupportedException("Must run as 32-bit process");
+                }
+                var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+                foreach (var dir in new [] { @"Gpg4win\bin", @"GnuPG\bin" }) {
+                    var path = Path.Combine(programFiles, dir);
+                    AddDllDirectory(path);
+                }
+            }
+
             Runtime.Init();
 
             if (args.Length > 0) {
